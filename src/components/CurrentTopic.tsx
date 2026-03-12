@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useData } from '../context/DataContext';
+import { useData, categoryForMode } from '../context/DataContext';
 import leftWojak from '../assets/left_wojak.svg';
 import rightWojak from '../assets/right_wojak.svg';
 
@@ -26,8 +26,14 @@ function pad(n: number): string {
   return n.toString().padStart(2, '0');
 }
 
+function categoryLabel(category: string): string {
+  if (category === 'quality-of-life') return 'Quality of Life';
+  if (category === 'cultural-darwinism') return 'Cultural Darwinism';
+  return category;
+}
+
 export default function CurrentTopic() {
-  const { topics } = useData();
+  const { topics, mode } = useData();
   const [countdown, setCountdown] = useState(getTimeUntilMidnightPT);
 
   useEffect(() => {
@@ -37,7 +43,9 @@ export default function CurrentTopic() {
     return () => clearInterval(interval);
   }, []);
 
-  const currentTopic = topics.length > 0 ? topics[topics.length - 1] : null;
+  const category = categoryForMode(mode);
+  const categoryTopics = topics.filter(t => t.category === category);
+  const currentTopic = categoryTopics.length > 0 ? categoryTopics[categoryTopics.length - 1] : null;
 
   if (!currentTopic) return null;
 
@@ -48,6 +56,9 @@ export default function CurrentTopic() {
       <div className="current-topic-accent" />
       <div className="current-topic-label">Current Duel Topic</div>
       <div className="current-topic-text">&ldquo;{currentTopic.topic}&rdquo;</div>
+      {currentTopic.category && (
+        <div className="current-topic-category">{categoryLabel(currentTopic.category)}</div>
+      )}
       <div className="current-topic-divider">
         <span />
         <span className="current-topic-diamond" />

@@ -1,32 +1,42 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useData } from '../context/DataContext';
+import { useData, categoryForMode } from '../context/DataContext';
 import Pagination from './Pagination';
 import CurrentTopic from './CurrentTopic';
 
 const PER_PAGE = 20;
 
+function formatYear(year: number): string {
+  if (year < 0) return `${Math.abs(year)} BCE`;
+  return `${year} CE`;
+}
+
 export default function Leaderboard() {
-  const { polities, qolDuels, darwinianDuels, mode, loading, error } = useData();
+  const { polities, duels, mode, loading, error } = useData();
   const [page, setPage] = useState(1);
 
-  const duels = mode === 'qol' ? qolDuels : darwinianDuels;
+  useEffect(() => { setPage(1); }, [mode]);
+
+  const category = categoryForMode(mode);
+  const filteredDuels = useMemo(() => {
+    return duels.filter(d => d.category === category);
+  }, [duels, category]);
 
   const winLoss = useMemo(() => {
     const wl = new Map<number, { wins: number; losses: number }>();
     for (const p of polities) wl.set(p.id, { wins: 0, losses: 0 });
-    for (const d of duels) {
+    for (const d of filteredDuels) {
       wl.get(d.winner_id)!.wins++;
       wl.get(d.loser_id)!.losses++;
     }
     return wl;
-  }, [polities, duels]);
+  }, [polities, filteredDuels]);
 
   const sorted = useMemo(() => {
     return [...polities].sort((a, b) => {
-      const eloA = mode === 'qol' ? a.qol_elo : a.darwinian_elo;
-      const eloB = mode === 'qol' ? b.qol_elo : b.darwinian_elo;
-      return eloB - eloA;
+      const ratingA = mode === 'qol' ? a.qol_rating : a.darwinian_rating;
+      const ratingB = mode === 'qol' ? b.qol_rating : b.darwinian_rating;
+      return ratingB - ratingA;
     });
   }, [polities, mode]);
 
@@ -50,7 +60,7 @@ export default function Leaderboard() {
               <th>#</th>
               <th>Name</th>
               <th>Year</th>
-              <th>Elo</th>
+              <th>Rating</th>
               <th>W-L</th>
             </tr>
           </thead>
@@ -58,7 +68,7 @@ export default function Leaderboard() {
             {pageItems.map((p, i) => {
               const rank = rankOffset + i + 1;
               const wl = winLoss.get(p.id)!;
-              const elo = mode === 'qol' ? p.qol_elo : p.darwinian_elo;
+              const rating = mode === 'qol' ? p.qol_rating : p.darwinian_rating;
               const rankClass = rank === 1 ? 'rank-gold' : rank === 2 ? 'rank-silver' : rank === 3 ? 'rank-bronze' : '';
               return (
                 <tr key={p.id} className={rankClass}>
@@ -66,8 +76,8 @@ export default function Leaderboard() {
                   <td>
                     <Link to={`/polity/${p.id}`} className="polity-link">{p.name}</Link>
                   </td>
-                  <td>{p.year}</td>
-                  <td className="elo-cell">{Math.round(elo)}</td>
+                  <td>{formatYear(p.start_year)}</td>
+                  <td className="elo-cell">{Math.round(rating)}</td>
                   <td>{wl.wins}-{wl.losses}</td>
                 </tr>
               );
@@ -81,17 +91,17 @@ export default function Leaderboard() {
         {pageItems.map((p, i) => {
           const rank = rankOffset + i + 1;
           const wl = winLoss.get(p.id)!;
-          const elo = mode === 'qol' ? p.qol_elo : p.darwinian_elo;
+          const rating = mode === 'qol' ? p.qol_rating : p.darwinian_rating;
           const rankClass = rank === 1 ? 'rank-gold' : rank === 2 ? 'rank-silver' : rank === 3 ? 'rank-bronze' : '';
           return (
             <Link to={`/polity/${p.id}`} key={p.id} className={`leaderboard-card ${rankClass}`}>
               <div className="card-rank">#{rank}</div>
               <div className="card-info">
                 <div className="card-name">{p.name}</div>
-                <div className="card-year">{p.year}</div>
+                <div className="card-year">{formatYear(p.start_year)}</div>
               </div>
               <div className="card-stats">
-                <span className="card-elo">{Math.round(elo)}</span>
+                <span className="card-elo">{Math.round(rating)}</span>
                 <span className="card-wl">{wl.wins}W-{wl.losses}L</span>
               </div>
             </Link>

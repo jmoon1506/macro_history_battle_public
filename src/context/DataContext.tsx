@@ -10,10 +10,8 @@ export type Mode = 'qol' | 'darwinian';
 interface DataState {
   polities: Polity[];
   topics: Topic[];
-  qolDuels: Duel[];
-  darwinianDuels: Duel[];
-  qolDuelsFull: DuelFull[] | null;
-  darwinianDuelsFull: DuelFull[] | null;
+  duels: Duel[];
+  duelsFull: DuelFull[] | null;
   polityMap: Map<number, Polity>;
   topicMap: Map<number, Topic>;
   loading: boolean;
@@ -31,15 +29,22 @@ export function useData() {
   return ctx;
 }
 
+const MODE_TO_CATEGORY: Record<Mode, string> = {
+  qol: 'quality-of-life',
+  darwinian: 'cultural-darwinism',
+};
+
+export function categoryForMode(mode: Mode): string {
+  return MODE_TO_CATEGORY[mode];
+}
+
 export function DataProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<Mode>('qol');
   const [state, setState] = useState<Omit<DataState, 'mode' | 'setMode'>>({
     polities: [],
     topics: [],
-    qolDuels: [],
-    darwinianDuels: [],
-    qolDuelsFull: null,
-    darwinianDuelsFull: null,
+    duels: [],
+    duelsFull: null,
     polityMap: new Map(),
     topicMap: new Map(),
     loading: true,
@@ -63,8 +68,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           ...prev,
           polities: data.polities,
           topics: data.topics,
-          qolDuels: data.qol_duels,
-          darwinianDuels: data.darwinian_duels,
+          duels: data.duels,
           polityMap,
           topicMap,
           loading: false,
@@ -80,8 +84,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       .then(data => {
         setState(prev => ({
           ...prev,
-          qolDuelsFull: data.qol_duels,
-          darwinianDuelsFull: data.darwinian_duels,
+          duelsFull: data.duels,
           fullLoading: false,
         }));
       })

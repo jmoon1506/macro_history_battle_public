@@ -66,6 +66,7 @@ a:hover { color: #6b4f0a; }
   display: flex;
   justify-content: center;
   gap: 0.5rem;
+  margin-top: 0.75rem;
 }
 
 .mode-toggle button {

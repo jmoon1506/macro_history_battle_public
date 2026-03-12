@@ -1,31 +1,40 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useData } from '../context/DataContext';
+import { useData, categoryForMode } from '../context/DataContext';
 import DuelRecord from './DuelRecord';
 import Pagination from './Pagination';
 
 const PER_PAGE = 10;
 
+function formatYear(year: number): string {
+  if (year < 0) return `${Math.abs(year)} BCE`;
+  return `${year} CE`;
+}
+
 export default function PolityPage() {
   const { id } = useParams<{ id: string }>();
   const polityId = Number(id);
-  const { polities, polityMap, qolDuels, darwinianDuels, mode, loading, error } = useData();
+  const { polities, polityMap, duels, mode, loading, error } = useData();
   const [page, setPage] = useState(1);
   const [expandedDuelId, setExpandedDuelId] = useState<number | null>(null);
 
+  useEffect(() => { setPage(1); setExpandedDuelId(null); }, [mode]);
+
   const polity = polityMap.get(polityId);
 
-  const duels = mode === 'qol' ? qolDuels : darwinianDuels;
-
+  const category = categoryForMode(mode);
   const filteredDuels = useMemo(() => {
-    return duels.filter(d => d.winner_id === polityId || d.loser_id === polityId);
-  }, [duels, polityId]);
+    return duels.filter(d =>
+      d.category === category &&
+      (d.winner_id === polityId || d.loser_id === polityId)
+    );
+  }, [duels, category, polityId]);
 
   const rank = useMemo(() => {
     const sorted = [...polities].sort((a, b) => {
-      const eloA = mode === 'qol' ? a.qol_elo : a.darwinian_elo;
-      const eloB = mode === 'qol' ? b.qol_elo : b.darwinian_elo;
-      return eloB - eloA;
+      const ratingA = mode === 'qol' ? a.qol_rating : a.darwinian_rating;
+      const ratingB = mode === 'qol' ? b.qol_rating : b.darwinian_rating;
+      return ratingB - ratingA;
     });
     return sorted.findIndex(p => p.id === polityId) + 1;
   }, [polities, polityId, mode]);
@@ -40,7 +49,7 @@ export default function PolityPage() {
   if (error) return <div className="error">Error: {error}</div>;
   if (!polity) return <div className="error">Polity not found. <Link to="/">Back to rankings</Link></div>;
 
-  const elo = mode === 'qol' ? polity.qol_elo : polity.darwinian_elo;
+  const rating = mode === 'qol' ? polity.qol_rating : polity.darwinian_rating;
 
   return (
     <div className="polity-page">
@@ -48,14 +57,14 @@ export default function PolityPage() {
 
       <div className="polity-hero">
         <h2>{polity.name}</h2>
-        <span className="polity-year">{polity.year}</span>
+        <span className="polity-year">{formatYear(polity.start_year)}</span>
         <p className="polity-description">{polity.description}</p>
       </div>
 
       <div className="stat-cards">
         <div className="stat-card">
-          <div className="stat-label">Elo</div>
-          <div className="stat-value stat-elo">{Math.round(elo)}</div>
+          <div className="stat-label">{mode === 'qol' ? 'QoL' : 'Darwinian'} Rating</div>
+          <div className="stat-value stat-elo">{Math.round(rating)}</div>
           <div className="stat-rank">Rank #{rank} of {polities.length}</div>
         </div>
         <div className="stat-card">
@@ -65,7 +74,9 @@ export default function PolityPage() {
         </div>
       </div>
 
-      <h3 className="section-title">Duel Records</h3>
+      <h3 className="section-title">
+        {mode === 'qol' ? 'Quality of Life' : 'Darwinian Fitness'} Duels
+      </h3>
 
       {filteredDuels.length === 0 ? (
         <p className="no-duels">No duels recorded yet.</p>
@@ -77,7 +88,6 @@ export default function PolityPage() {
                 key={duel.id}
                 duel={duel}
                 polityId={polityId}
-                type={mode}
                 expanded={expandedDuelId === duel.id}
                 onToggle={() => setExpandedDuelId(expandedDuelId === duel.id ? null : duel.id)}
               />

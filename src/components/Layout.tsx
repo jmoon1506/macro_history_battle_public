@@ -15,9 +15,6 @@ export default function Layout({ children }: { children: ReactNode }) {
         <Link to="/" className="header-title">
           <h1>Official Macro History Rankings</h1>
         </Link>
-      </header>
-      <main className="main">{children}</main>
-      <footer className="footer">
         <div className="mode-toggle">
           {(['qol', 'darwinian'] as Mode[]).map(m => (
             <button
@@ -29,7 +26,9 @@ export default function Layout({ children }: { children: ReactNode }) {
             </button>
           ))}
         </div>
-      </footer>
+      </header>
+      <main className="main">{children}</main>
+      <footer className="footer" />
     </div>
   );
 }
