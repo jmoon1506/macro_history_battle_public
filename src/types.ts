@@ -23,9 +23,11 @@ export interface Duel {
   category: string;
   winner_id: number;
   loser_id: number;
+  polity_a_id: number;
 }
 
-export interface DuelFull extends Duel {
+export interface EvalEntry {
+  id: number;
   evaluation: string;
 }
 
@@ -33,10 +35,4 @@ export interface SlimData {
   polities: Polity[];
   topics: Topic[];
   duels: Duel[];
-}
-
-export interface FullData {
-  polities: Polity[];
-  topics: Topic[];
-  duels: DuelFull[];
 }

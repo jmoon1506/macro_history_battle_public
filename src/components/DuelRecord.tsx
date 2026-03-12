@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import type { Duel } from '../types';
@@ -11,14 +11,22 @@ interface Props {
 }
 
 export default function DuelRecord({ duel, polityId, expanded, onToggle }: Props) {
-  const { polityMap, topicMap, duelsFull, fullLoading } = useData();
+  const { polityMap, topicMap, getEvaluation, fetchEvaluations, evalLoading } = useData();
 
   const won = duel.winner_id === polityId;
   const opponentId = won ? duel.loser_id : duel.winner_id;
   const opponent = polityMap.get(opponentId);
   const topic = topicMap.get(duel.topic_id);
 
-  const fullDuel = duelsFull?.find(d => d.id === duel.id);
+  const evaluation = getEvaluation(duel);
+  const loading = evalLoading(duel.polity_a_id);
+
+  // Fetch evaluations when expanded
+  useEffect(() => {
+    if (expanded && !evaluation) {
+      fetchEvaluations(duel.polity_a_id);
+    }
+  }, [expanded, evaluation, duel.polity_a_id, fetchEvaluations]);
 
   const topicRef = useRef<HTMLSpanElement>(null);
   const [isOverflowing, setIsOverflowing] = useState(false);
@@ -48,10 +56,10 @@ export default function DuelRecord({ duel, polityId, expanded, onToggle }: Props
       </div>
       {expanded && (
         <div className="duel-evaluation">
-          {fullLoading ? (
+          {loading ? (
             <div className="spinner">Loading evaluation&hellip;</div>
-          ) : fullDuel?.evaluation ? (
-            <p>{fullDuel.evaluation}</p>
+          ) : evaluation ? (
+            <p>{evaluation}</p>
           ) : (
             <p className="no-eval">No evaluation available.</p>
           )}
