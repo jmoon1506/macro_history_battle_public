@@ -19,7 +19,7 @@ export default function Leaderboard() {
 
   const category = categoryForMode(mode);
   const filteredDuels = useMemo(() => {
-    return duels.filter(d => d.category === category);
+    return duels.filter(d => d.category === category && d.winner_id != null && d.loser_id != null);
   }, [duels, category]);
 
   const winLoss = useMemo(() => {
