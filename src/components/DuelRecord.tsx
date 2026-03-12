@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import type { Duel } from '../types';
@@ -19,6 +20,14 @@ export default function DuelRecord({ duel, polityId, expanded, onToggle }: Props
 
   const fullDuel = duelsFull?.find(d => d.id === duel.id);
 
+  const topicRef = useRef<HTMLSpanElement>(null);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+
+  const handleMouseEnter = () => {
+    const el = topicRef.current;
+    if (el) setIsOverflowing(el.scrollWidth > el.clientWidth);
+  };
+
   return (
     <div className={`duel-record ${expanded ? 'expanded' : ''}`}>
       <div className="duel-row" onClick={onToggle}>
@@ -28,7 +37,10 @@ export default function DuelRecord({ duel, polityId, expanded, onToggle }: Props
             {opponent?.name ?? `#${opponentId}`}
           </Link>
         </span>
-        <span className="duel-topic">{topic?.topic ?? '—'}</span>
+        <span className="duel-topic-wrapper" onMouseEnter={handleMouseEnter}>
+          <span className="duel-topic" ref={topicRef}>{topic?.topic ?? '—'}</span>
+          {isOverflowing && <span className="duel-topic-tooltip">{topic!.topic}</span>}
+        </span>
         <span className={`badge ${won ? 'badge-win' : 'badge-loss'}`}>
           {won ? 'Won' : 'Lost'}
         </span>
