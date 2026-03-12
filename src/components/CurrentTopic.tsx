@@ -56,9 +56,6 @@ export default function CurrentTopic() {
       <div className="current-topic-accent" />
       <div className="current-topic-label">Current Duel Topic</div>
       <div className="current-topic-text">&ldquo;{currentTopic.topic}&rdquo;</div>
-      {currentTopic.category && (
-        <div className="current-topic-category">{categoryLabel(currentTopic.category)}</div>
-      )}
       <div className="current-topic-divider">
         <span />
         <span className="current-topic-diamond" />
