@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import type { Duel } from '../types';
 
@@ -33,16 +32,12 @@ export default function TopicDuelRecord({ duel, expanded, onToggle }: Props) {
       <div className="duel-row" onClick={onToggle}>
         <span className="duel-matchup">
           <span className="matchup-polity">
-            <Link to={`/polity/${duel.winner_id}`} onClick={e => e.stopPropagation()} className="polity-link">
-              {winner?.name ?? `#${duel.winner_id}`}
-            </Link>
             <span className="badge badge-win">Won</span>
+            {winner?.name ?? `#${duel.winner_id}`}
           </span>
           <span className="matchup-vs">vs</span>
           <span className="matchup-polity">
-            <Link to={`/polity/${duel.loser_id}`} onClick={e => e.stopPropagation()} className="polity-link">
-              {loser?.name ?? `#${duel.loser_id}`}
-            </Link>
+            {loser?.name ?? `#${duel.loser_id}`}
             <span className="badge badge-loss">Lost</span>
           </span>
         </span>
