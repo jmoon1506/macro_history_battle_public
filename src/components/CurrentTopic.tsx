@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useData, categoryForMode } from '../context/DataContext';
 import leftWojak from '../assets/left_wojak.svg';
 import rightWojak from '../assets/right_wojak.svg';
@@ -49,7 +50,7 @@ export default function CurrentTopic() {
       <img className="current-topic-wojak current-topic-wojak-right" src={rightWojak} alt="" aria-hidden="true" />
       <div className="current-topic-accent" />
       <div className="current-topic-label">Current Duel Topic</div>
-      <div className="current-topic-text">&ldquo;{currentTopic.topic}&rdquo;</div>
+      <Link to={`/topic/${currentTopic.id}`} className="current-topic-text">&ldquo;{currentTopic.topic}&rdquo;</Link>
       <div className="current-topic-divider">
         <span />
         <span className="current-topic-diamond" />

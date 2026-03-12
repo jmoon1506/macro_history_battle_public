@@ -10,6 +10,10 @@ interface Props {
   onToggle: () => void;
 }
 
+function stripMarkdown(text: string): string {
+  return text.replace(/#{1,6}\s?/g, '').replace(/\*{1,2}([^*]+)\*{1,2}/g, '$1');
+}
+
 export default function DuelRecord({ duel, polityId, expanded, onToggle }: Props) {
   const { polityMap, topicMap, getEvaluation, fetchEvaluations, evalLoading } = useData();
 
@@ -46,7 +50,11 @@ export default function DuelRecord({ duel, polityId, expanded, onToggle }: Props
           </Link>
         </span>
         <span className="duel-topic-wrapper" onMouseEnter={handleMouseEnter}>
-          <span className="duel-topic" ref={topicRef}>{topic?.topic ?? '—'}</span>
+          {topic ? (
+            <Link to={`/topic/${topic.id}`} onClick={e => e.stopPropagation()} className="duel-topic-link" ref={topicRef as React.Ref<HTMLAnchorElement>}>{topic.topic}</Link>
+          ) : (
+            <span className="duel-topic" ref={topicRef}>—</span>
+          )}
           {isOverflowing && <span className="duel-topic-tooltip">{topic!.topic}</span>}
         </span>
         <span className={`badge ${won ? 'badge-win' : 'badge-loss'}`}>
@@ -59,7 +67,7 @@ export default function DuelRecord({ duel, polityId, expanded, onToggle }: Props
           {loading ? (
             <div className="spinner">Loading evaluation&hellip;</div>
           ) : evaluation ? (
-            <p>{evaluation}</p>
+            <p>{stripMarkdown(evaluation)}</p>
           ) : (
             <p className="no-eval">No evaluation available.</p>
           )}

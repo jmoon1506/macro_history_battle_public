@@ -53,7 +53,7 @@ export default function PolityPage() {
 
   return (
     <div className="polity-page">
-      <Link to="/" className="back-link">&larr; Back to Rankings</Link>
+      <Link to="/" className="back-link">&larr; Rankings</Link>
 
       <div className="polity-hero">
         <h2>{polity.name}</h2>
