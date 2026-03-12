@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import type { Duel } from '../types';
 
@@ -44,10 +43,7 @@ export default function DuelRecord({ duel, polityId, expanded, onToggle }: Props
     <div className={`duel-record ${expanded ? 'expanded' : ''}`}>
       <div className="duel-row" onClick={onToggle}>
         <span className="duel-opponent">
-          vs{' '}
-          <Link to={`/polity/${opponentId}`} onClick={e => e.stopPropagation()} className="polity-link">
-            {opponent?.name ?? `#${opponentId}`}
-          </Link>
+          vs {opponent?.name ?? `#${opponentId}`}
         </span>
         <span className="duel-topic-wrapper" onMouseEnter={handleMouseEnter}>
           {topic ? (
