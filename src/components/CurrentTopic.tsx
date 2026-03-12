@@ -26,12 +26,6 @@ function pad(n: number): string {
   return n.toString().padStart(2, '0');
 }
 
-function categoryLabel(category: string): string {
-  if (category === 'quality-of-life') return 'Quality of Life';
-  if (category === 'cultural-darwinism') return 'Cultural Darwinism';
-  return category;
-}
-
 export default function CurrentTopic() {
   const { topics, mode } = useData();
   const [countdown, setCountdown] = useState(getTimeUntilMidnightPT);
