@@ -51,7 +51,7 @@ export default function DuelRecord({ duel, polityId, expanded, onToggle }: Props
         </span>
         <span className="duel-topic-wrapper" onMouseEnter={handleMouseEnter}>
           {topic ? (
-            <Link to={`/topic/${topic.id}`} onClick={e => e.stopPropagation()} className="duel-topic-link" ref={topicRef as React.Ref<HTMLAnchorElement>}>{topic.topic}</Link>
+            <span className="duel-topic" ref={topicRef}>{topic.topic}</span>
           ) : (
             <span className="duel-topic" ref={topicRef}>—</span>
           )}
