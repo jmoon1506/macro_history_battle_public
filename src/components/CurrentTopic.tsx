@@ -1,21 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useData, categoryForMode } from '../context/DataContext';
+import type { Topic } from '../types';
 import leftWojak from '../assets/left_wojak.svg';
 import rightWojak from '../assets/right_wojak.svg';
 
-function getTimeUntilMidnightPT(): { hours: number; minutes: number; seconds: number } {
-  const now = new Date();
-  const ptString = now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' });
-  const ptNow = new Date(ptString);
+function isTopicActive(topic: Topic): boolean {
+  if (!topic.starts_at) return true;
+  return new Date(topic.starts_at).getTime() <= Date.now();
+}
 
-  const ptMidnight = new Date(ptNow);
-  ptMidnight.setDate(ptMidnight.getDate() + 1);
-  ptMidnight.setHours(0, 0, 0, 0);
-
-  const diffMs = ptMidnight.getTime() - ptNow.getTime();
+function getCountdownTo(target: Date): { hours: number; minutes: number; seconds: number } {
+  const diffMs = target.getTime() - Date.now();
   const totalSeconds = Math.max(0, Math.floor(diffMs / 1000));
-
   return {
     hours: Math.floor(totalSeconds / 3600),
     minutes: Math.floor((totalSeconds % 3600) / 60),
@@ -29,18 +26,34 @@ function pad(n: number): string {
 
 export default function CurrentTopic() {
   const { topics, mode } = useData();
-  const [countdown, setCountdown] = useState(getTimeUntilMidnightPT);
+  const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCountdown(getTimeUntilMidnightPT());
-    }, 1000);
+    const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
   }, []);
 
   const category = categoryForMode(mode);
-  const categoryTopics = topics.filter(t => t.category === category);
-  const currentTopic = categoryTopics.length > 0 ? categoryTopics[categoryTopics.length - 1] : null;
+  const categoryTopics = useMemo(
+    () => topics.filter(t => t.category === category),
+    [topics, category]
+  );
+
+  // Current topic = most recent active topic
+  const currentTopic = useMemo(() => {
+    const active = categoryTopics.filter(isTopicActive);
+    return active.length > 0 ? active[active.length - 1] : null;
+  }, [categoryTopics, now]);
+
+  // Next upcoming topic = earliest future topic
+  const nextTopic = useMemo(() => {
+    const future = categoryTopics.filter(t => t.starts_at && !isTopicActive(t));
+    return future.length > 0 ? future[0] : null;
+  }, [categoryTopics, now]);
+
+  const countdown = nextTopic?.starts_at
+    ? getCountdownTo(new Date(nextTopic.starts_at))
+    : null;
 
   if (!currentTopic) return null;
 
@@ -56,25 +69,27 @@ export default function CurrentTopic() {
         <span className="current-topic-diamond" />
         <span />
       </div>
-      <div className="countdown">
-        <div className="countdown-label">Next topic in</div>
-        <div className="countdown-timer">
-          <div className="countdown-block">
-            <span className="countdown-value">{pad(countdown.hours)}</span>
-            <span className="countdown-unit">hrs</span>
-          </div>
-          <span className="countdown-sep">:</span>
-          <div className="countdown-block">
-            <span className="countdown-value">{pad(countdown.minutes)}</span>
-            <span className="countdown-unit">min</span>
-          </div>
-          <span className="countdown-sep">:</span>
-          <div className="countdown-block">
-            <span className="countdown-value">{pad(countdown.seconds)}</span>
-            <span className="countdown-unit">sec</span>
+      {countdown && (
+        <div className="countdown">
+          <div className="countdown-label">Next topic in</div>
+          <div className="countdown-timer">
+            <div className="countdown-block">
+              <span className="countdown-value">{pad(countdown.hours)}</span>
+              <span className="countdown-unit">hrs</span>
+            </div>
+            <span className="countdown-sep">:</span>
+            <div className="countdown-block">
+              <span className="countdown-value">{pad(countdown.minutes)}</span>
+              <span className="countdown-unit">min</span>
+            </div>
+            <span className="countdown-sep">:</span>
+            <div className="countdown-block">
+              <span className="countdown-value">{pad(countdown.seconds)}</span>
+              <span className="countdown-unit">sec</span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

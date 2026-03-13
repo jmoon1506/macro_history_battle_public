@@ -15,6 +15,7 @@ export interface Topic {
   topic: string;
   category: string;
   summary: string;
+  starts_at: string | null;
 }
 
 export interface Duel {
