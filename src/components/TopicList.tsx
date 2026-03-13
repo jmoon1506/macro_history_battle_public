@@ -14,7 +14,8 @@ export default function TopicList() {
   const category = categoryForMode(mode);
 
   const filteredTopics = useMemo(() => {
-    return topics.filter(t => t.category === category);
+    const now = new Date();
+    return topics.filter(t => t.category === category && (!t.starts_at || new Date(t.starts_at) <= now));
   }, [topics, category]);
 
   const totalPages = Math.ceil(filteredTopics.length / PER_PAGE);

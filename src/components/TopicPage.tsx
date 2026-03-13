@@ -65,7 +65,7 @@ export default function TopicPage() {
       </div>
 
       <h3 className="section-title">
-        Duels ({filteredDuels.length})
+        Duels
       </h3>
 
       {filteredDuels.length === 0 ? (
