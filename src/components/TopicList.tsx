@@ -6,7 +6,7 @@ import Pagination from './Pagination';
 const PER_PAGE = 20;
 
 export default function TopicList() {
-  const { topics, duels, mode, loading, error } = useData();
+  const { topics, mode, loading, error } = useData();
   const [page, setPage] = useState(1);
 
   useEffect(() => { setPage(1); }, [mode]);
@@ -16,16 +16,6 @@ export default function TopicList() {
   const filteredTopics = useMemo(() => {
     return topics.filter(t => t.category === category);
   }, [topics, category]);
-
-  const duelCountByTopic = useMemo(() => {
-    const counts = new Map<number, number>();
-    for (const d of duels) {
-      if (d.category === category && d.winner_id != null && d.loser_id != null) {
-        counts.set(d.topic_id, (counts.get(d.topic_id) ?? 0) + 1);
-      }
-    }
-    return counts;
-  }, [duels, category]);
 
   const totalPages = Math.ceil(filteredTopics.length / PER_PAGE);
   const pageItems = filteredTopics.slice((page - 1) * PER_PAGE, page * PER_PAGE);
@@ -45,16 +35,12 @@ export default function TopicList() {
       ) : (
         <>
           <div className="topic-list">
-            {pageItems.map(t => {
-              const count = duelCountByTopic.get(t.id) ?? 0;
-              return (
-                <Link to={`/topic/${t.id}`} key={t.id} className="topic-row">
-                  <span className="topic-row-text">{t.topic}</span>
-                  <span className="topic-row-count">{count} duel{count !== 1 ? 's' : ''}</span>
-                  <span className="duel-chevron">&#9654;</span>
-                </Link>
-              );
-            })}
+            {pageItems.map(t => (
+              <Link to={`/topic/${t.id}`} key={t.id} className="topic-row">
+                <span className="topic-row-text">{t.topic}</span>
+                <span className="duel-chevron">&#9654;</span>
+              </Link>
+            ))}
           </div>
           <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
         </>
