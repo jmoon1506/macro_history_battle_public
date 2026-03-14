@@ -5,9 +5,11 @@ import type { Topic } from '../types';
 import leftWojak from '../assets/left_wojak.svg';
 import rightWojak from '../assets/right_wojak.svg';
 
+const DISPLAY_DELAY_MS = 8 * 60 * 60 * 1000; // 8 hours
+
 function isTopicActive(topic: Topic): boolean {
   if (!topic.starts_at) return true;
-  return new Date(topic.starts_at).getTime() <= Date.now();
+  return new Date(topic.starts_at).getTime() + DISPLAY_DELAY_MS <= Date.now();
 }
 
 function getCountdownTo(target: Date): { hours: number; minutes: number; seconds: number } {
@@ -52,7 +54,7 @@ export default function CurrentTopic() {
   }, [categoryTopics, now]);
 
   const countdown = nextTopic?.starts_at
-    ? getCountdownTo(new Date(nextTopic.starts_at))
+    ? getCountdownTo(new Date(new Date(nextTopic.starts_at).getTime() + DISPLAY_DELAY_MS))
     : null;
 
   if (!currentTopic) return null;

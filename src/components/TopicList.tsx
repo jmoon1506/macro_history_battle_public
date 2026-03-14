@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useData, categoryForMode } from '../context/DataContext';
 import Pagination from './Pagination';
 
+const DISPLAY_DELAY_MS = 8 * 60 * 60 * 1000; // 8 hours
 const PER_PAGE = 20;
 
 export default function TopicList() {
@@ -20,7 +21,7 @@ export default function TopicList() {
     );
     return topics.filter(t =>
       t.category === category &&
-      (!t.starts_at || new Date(t.starts_at) <= now) &&
+      (!t.starts_at || new Date(t.starts_at).getTime() + DISPLAY_DELAY_MS <= now.getTime()) &&
       topicIdsWithDuels.has(t.id)
     );
   }, [topics, duels, category]);
