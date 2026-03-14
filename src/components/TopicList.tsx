@@ -6,7 +6,7 @@ import Pagination from './Pagination';
 const PER_PAGE = 20;
 
 export default function TopicList() {
-  const { topics, mode, loading, error } = useData();
+  const { topics, duels, mode, loading, error } = useData();
   const [page, setPage] = useState(1);
 
   useEffect(() => { setPage(1); }, [mode]);
@@ -15,8 +15,15 @@ export default function TopicList() {
 
   const filteredTopics = useMemo(() => {
     const now = new Date();
-    return topics.filter(t => t.category === category && (!t.starts_at || new Date(t.starts_at) <= now));
-  }, [topics, category]);
+    const topicIdsWithDuels = new Set(
+      duels.filter(d => d.winner_id && d.loser_id).map(d => d.topic_id)
+    );
+    return topics.filter(t =>
+      t.category === category &&
+      (!t.starts_at || new Date(t.starts_at) <= now) &&
+      topicIdsWithDuels.has(t.id)
+    );
+  }, [topics, duels, category]);
 
   const totalPages = Math.ceil(filteredTopics.length / PER_PAGE);
   const pageItems = filteredTopics.slice((page - 1) * PER_PAGE, page * PER_PAGE);

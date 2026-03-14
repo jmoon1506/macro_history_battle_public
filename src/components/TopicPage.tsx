@@ -9,13 +9,21 @@ const PER_PAGE = 10;
 export default function TopicPage() {
   const { id } = useParams<{ id: string }>();
   const topicId = Number(id);
-  const { topicMap, polityMap, duels, mode, loading, error } = useData();
+  const { topicMap, polityMap, duels, mode, setMode, loading, error } = useData();
   const [page, setPage] = useState(1);
   const [expandedDuelId, setExpandedDuelId] = useState<number | null>(null);
 
   useEffect(() => { setPage(1); setExpandedDuelId(null); }, [mode]);
 
   const topic = topicMap.get(topicId);
+
+  // Auto-switch mode to match the topic's category
+  useEffect(() => {
+    if (topic) {
+      const correctMode = topic.category === 'quality-of-life' ? 'qol' : 'darwinian';
+      if (mode !== correctMode) setMode(correctMode);
+    }
+  }, [topic, mode, setMode]);
 
   const category = categoryForMode(mode);
   const filteredDuels = useMemo(() => {
@@ -38,19 +46,6 @@ export default function TopicPage() {
   if (loading) return <div className="loading">Loading&hellip;</div>;
   if (error) return <div className="error">Error: {error}</div>;
   if (!topic) return <div className="error">Topic not found. <Link to="/topics">Back to topics</Link></div>;
-
-  // If topic doesn't match current mode, show a message
-  if (topic.category !== category) {
-    return (
-      <div className="topic-page">
-        <Link to="/topics" className="back-link">&larr; All Topics</Link>
-        <p className="no-duels">
-          This topic belongs to the {topic.category === 'quality-of-life' ? 'Quality of Life' : 'Darwinian Fitness'} category.
-          Switch modes to view it.
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="topic-page">
